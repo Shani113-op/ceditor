@@ -9,7 +9,7 @@ export default function RegisterPage() {
         email: "",
         password: "",
         confirmPassword: "",
-        role: "creator",
+        role: "CREATOR",
     });
 
     const handleChange = (
@@ -18,7 +18,7 @@ export default function RegisterPage() {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (form.password !== form.confirmPassword) {
@@ -26,15 +26,38 @@ export default function RegisterPage() {
             return;
         }
 
-        localStorage.setItem(
-            "user",
-            JSON.stringify({
-                fullName: form.fullName,
-                role: form.role,
-            })
-        );
+        try {
+            const res = await fetch("http://localhost:5000/api/auth/register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    name: form.fullName,   // IMPORTANT: change fullName → name
+                    email: form.email,
+                    password: form.password,
+                    role: form.role,
+                }),
+            });
 
-        window.location.href = `/${form.role}`;
+            const data = await res.json();
+
+            if (!res.ok) {
+                alert(data.message);
+                return;
+            }
+
+            // Save token
+            localStorage.setItem("token", data.token);
+            localStorage.setItem("user", JSON.stringify(data.user));
+
+            // Redirect based on role
+            window.location.href = `/${form.role.toLowerCase()}`;
+
+        } catch (error) {
+            console.error(error);
+            alert("Something went wrong");
+        }
     };
 
 
@@ -90,8 +113,8 @@ export default function RegisterPage() {
                             onChange={handleChange}
                             className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                         >
-                            <option value="creator">Creator</option>
-                            <option value="editor">Editor</option>
+                            <option value="CREATOR">Creator</option>
+                            <option value="EDITOR">Editor</option>
                         </select>
                     </div>
 

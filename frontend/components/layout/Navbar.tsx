@@ -2,14 +2,16 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 type User = {
-    fullName: string;
-    role: "creator" | "editor";
+    name: string;
+    role: "CREATOR" | "EDITOR";
 };
 
 export default function Navbar() {
     const [user, setUser] = useState<User | null>(null);
+    const router = useRouter();
 
     useEffect(() => {
         const storedUser = localStorage.getItem("user");
@@ -21,12 +23,19 @@ export default function Navbar() {
     const handleLogout = () => {
         localStorage.removeItem("user");
         setUser(null);
-        window.location.href = "/";
+        router.push("/");
+    };
+
+    const getDashboardLink = () => {
+        if (!user) return "/";
+        return user.role === "CREATOR"
+            ? "/creator/dashboard"
+            : "/editor/dashboard";
     };
 
     return (
-        <header className="w-full bg-surface border-b border-border sticky top-0 z-50">
-            <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <header className="sticky top-0 z-50 w-full border-b border-border bg-surface">
+            <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
 
                 {/* Logo */}
                 <Link href="/" className="text-xl font-bold text-primary">
@@ -34,33 +43,43 @@ export default function Navbar() {
                 </Link>
 
                 {/* Middle Links */}
-                <nav className="hidden md:flex items-center gap-6 text-textMuted">
-                    <Link href="/projects" className="hover:text-textPrimary transition">
+                <nav className="hidden items-center gap-6 text-textMuted md:flex">
+                    <Link
+                        href="/projects"
+                        className="transition hover:text-textPrimary"
+                    >
                         Explore
                     </Link>
-                    <Link href="/editor" className="hover:text-textPrimary transition">
+
+                    <Link
+                        href="/editor/dashboard"
+                        className="transition hover:text-textPrimary"
+                    >
                         Editors
                     </Link>
-                    <Link href="/creator" className="hover:text-textPrimary transition">
+
+                    <Link
+                        href="/creator/dashboard"
+                        className="transition hover:text-textPrimary"
+                    >
                         Creators
                     </Link>
                 </nav>
 
                 {/* Right Side */}
                 <div className="flex items-center gap-4">
-
                     {!user ? (
                         <>
                             <Link
                                 href="/login"
-                                className="text-textMuted hover:text-textPrimary transition"
+                                className="transition hover:text-textPrimary text-textMuted"
                             >
                                 Login
                             </Link>
 
                             <Link
                                 href="/register"
-                                className="bg-primary hover:opacity-90 transition px-4 py-2 rounded-lg text-white font-medium"
+                                className="rounded-lg bg-primary px-4 py-2 font-medium text-white transition hover:opacity-90"
                             >
                                 Register
                             </Link>
@@ -68,22 +87,22 @@ export default function Navbar() {
                     ) : (
                         <>
                             <Link
-                                href={`/${user.role}`}
-                                className="bg-primary hover:opacity-90 transition px-4 py-2 rounded-lg text-white font-medium"
+                                href={getDashboardLink()}
+                                className="rounded-lg bg-primary px-4 py-2 font-medium text-white transition hover:opacity-90"
                             >
-                                {user.fullName.split(" ")[0]}'s Dashboard
+                                {user.name.split(" ")[0]}'s Dashboard
                             </Link>
 
                             <button
                                 onClick={handleLogout}
-                                className="text-danger hover:underline"
+                                className="text-danger transition hover:underline"
                             >
                                 Logout
                             </button>
                         </>
                     )}
-
                 </div>
+
             </div>
         </header>
     );

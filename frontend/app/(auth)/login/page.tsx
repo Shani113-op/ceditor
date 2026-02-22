@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import axios from "axios";
 
 export default function LoginPage() {
     const [form, setForm] = useState({
@@ -17,26 +16,37 @@ export default function LoginPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        const res = await fetch("/api/login", {
-            method: "POST",
-            body: JSON.stringify(form),
-        });
+        try {
+            const res = await fetch("http://localhost:5000/api/auth/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(form),
+            });
 
-        const data = await res.json();
+            const data = await res.json();
 
-        if (res.ok) {
+            if (!res.ok) {
+                alert(data.message);
+                return;
+            }
+
+            // Save token
+            localStorage.setItem("token", data.token);
             localStorage.setItem("user", JSON.stringify(data.user));
 
+            // Redirect based on role
             if (data.user.role === "CREATOR") {
                 window.location.href = "/creator";
             } else {
-                window.location.href = "/editor";
+                window.location.href = "/brand";
             }
-        } else {
-            alert(data.message);
+
+        } catch (error) {
+            console.error("Login error:", error);
         }
     };
-
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-background px-6">

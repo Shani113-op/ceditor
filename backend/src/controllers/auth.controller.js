@@ -27,13 +27,16 @@ exports.register = async (req, res) => {
         // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        // Normalize role to uppercase to match Prisma enum
+        const normalizedRole = role.toUpperCase();
+
         // Create user
         const user = await prisma.user.create({
             data: {
                 name,
                 email,
                 password: hashedPassword,
-                role,
+                role: normalizedRole,
             },
         });
 
@@ -55,9 +58,10 @@ exports.register = async (req, res) => {
             },
         });
     } catch (error) {
-        console.error(error);
+        console.error("Registration Error:", error);
         res.status(500).json({
             message: "Internal Server Error",
+            error: error.message,
         });
     }
 };
