@@ -2,6 +2,9 @@ const prisma = require("../lib/prisma");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
+// Allowed roles
+const allowedRoles = ["CREATOR", "EDITOR"];
+
 // ================= REGISTER =================
 exports.register = async (req, res) => {
     try {
@@ -10,6 +13,15 @@ exports.register = async (req, res) => {
         if (!name || !email || !password || !role) {
             return res.status(400).json({
                 message: "All fields are required",
+            });
+        }
+
+        const normalizedRole = role.toUpperCase();
+
+        // ✅ Validate role strictly
+        if (!allowedRoles.includes(normalizedRole)) {
+            return res.status(400).json({
+                message: "Invalid role selected",
             });
         }
 
@@ -25,10 +37,7 @@ exports.register = async (req, res) => {
         }
 
         // Hash password
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Normalize role to uppercase to match Prisma enum
-        const normalizedRole = role.toUpperCase();
+        const hashedPassword = await bcrypt.hash(password, 12); // stronger salt
 
         // Create user
         const user = await prisma.user.create({
@@ -42,12 +51,15 @@ exports.register = async (req, res) => {
 
         // Generate JWT
         const token = jwt.sign(
-            { userId: user.id, role: user.role },
+            {
+                id: user.id,
+                role: user.role,
+            },
             process.env.JWT_SECRET,
             { expiresIn: "7d" }
         );
 
-        res.status(201).json({
+        return res.status(201).json({
             message: "User registered successfully",
             token,
             user: {
@@ -57,11 +69,11 @@ exports.register = async (req, res) => {
                 role: user.role,
             },
         });
+
     } catch (error) {
         console.error("Registration Error:", error);
-        res.status(500).json({
+        return res.status(500).json({
             message: "Internal Server Error",
-            error: error.message,
         });
     }
 };
@@ -71,7 +83,12 @@ exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // Check user
+        if (!email || !password) {
+            return res.status(400).json({
+                message: "Email and password are required",
+            });
+        }
+
         const user = await prisma.user.findUnique({
             where: { email },
         });
@@ -82,7 +99,6 @@ exports.login = async (req, res) => {
             });
         }
 
-        // Compare password
         const isMatch = await bcrypt.compare(password, user.password);
 
         if (!isMatch) {
@@ -91,14 +107,16 @@ exports.login = async (req, res) => {
             });
         }
 
-        // Generate token
         const token = jwt.sign(
-            { userId: user.id, role: user.role },
+            {
+                id: user.id,
+                role: user.role,
+            },
             process.env.JWT_SECRET,
             { expiresIn: "7d" }
         );
 
-        res.status(200).json({
+        return res.status(200).json({
             message: "Login successful",
             token,
             user: {
@@ -108,9 +126,10 @@ exports.login = async (req, res) => {
                 role: user.role,
             },
         });
+
     } catch (error) {
-        console.error(error);
-        res.status(500).json({
+        console.error("Login Error:", error);
+        return res.status(500).json({
             message: "Internal Server Error",
         });
     }

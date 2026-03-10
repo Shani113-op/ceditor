@@ -9,6 +9,7 @@ const menuItems = [
     { name: "Earnings", href: "/editor/earnings" },
     { name: "Messages", href: "/editor/messages" },
     { name: "Profile", href: "/editor/profile" },
+    { name: "Upload Demo", href: "/editor/upload-reel" }
 ];
 
 export default function EditorSidebar() {

@@ -10,6 +10,7 @@ const menuItems = [
     { name: "Proposals", href: "/creator/proposals" },
     { name: "Messages", href: "/creator/messages" },
     { name: "Profile", href: "/creator/profile" },
+    { name: "Demo Reels", href: "/creator/reels" }
 ];
 
 export default function CreatorSidebar() {

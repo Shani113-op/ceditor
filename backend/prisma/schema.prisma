@@ -13,6 +13,23 @@ enum Role {
   ADMIN
 }
 
+enum ProjectStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum VideoType {
+  CLOUDINARY
+  EXTERNAL
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   name      String
@@ -20,4 +37,52 @@ model User {
   password  String
   role      Role
   createdAt DateTime @default(now())
+
+  // Relations
+  projects      Project[]     @relation("CreatorProjects")
+  applications  Application[] @relation("EditorApplications")
+  reels         Reel[]
+}
+
+model Project {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  budget      Float
+  category    String
+  status      ProjectStatus @default(OPEN)
+
+  creatorId   Int
+  creator     User @relation("CreatorProjects", fields: [creatorId], references: [id])
+
+  applications Application[]
+
+  createdAt   DateTime @default(now())
+}
+
+model Application {
+  id        Int      @id @default(autoincrement())
+
+  projectId Int
+  project   Project  @relation(fields: [projectId], references: [id])
+
+  editorId  Int
+  editor    User     @relation("EditorApplications", fields: [editorId], references: [id])
+
+  status    ApplicationStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+}
+
+model Reel {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  videoUrl    String
+  videoType   VideoType @default(CLOUDINARY)  // 👈 ADD THIS
+
+  editorId    Int
+  editor      User     @relation(fields: [editorId], references: [id])
+
+  createdAt   DateTime @default(now())
 }

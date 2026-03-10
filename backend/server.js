@@ -4,6 +4,8 @@ const cors = require("cors");
 const prisma = require("./src/lib/prisma");
 
 const authRoutes = require("./src/routes/auth.routes");
+const postRoutes = require("./src/routes/post.routes");
+const reelRoutes = require("./src/routes/reel.routes");
 
 const app = express();
 
@@ -11,6 +13,8 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/posts", postRoutes);
+app.use("/api/reels", reelRoutes);
 
 app.get("/", (req, res) => {
     res.send("API is running...");

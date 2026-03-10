@@ -37,10 +37,13 @@ export default function LoginPage() {
             localStorage.setItem("user", JSON.stringify(data.user));
 
             // Redirect based on role
-            if (data.user.role === "CREATOR") {
-                window.location.href = "/creator";
+            // Redirect based on role
+            if (data.user.role === "EDITOR") {
+                window.location.href = "/editor/dashboard";
+            } else if (data.user.role === "CREATOR") {
+                window.location.href = "/creator/dashboard";
             } else {
-                window.location.href = "/brand";
+                window.location.href = "/";
             }
 
         } catch (error) {

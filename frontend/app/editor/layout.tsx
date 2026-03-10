@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import EditorSidebar from "@/components/layout/EditorSidebar";
 
 export default function EditorLayout({
@@ -5,6 +9,29 @@ export default function EditorLayout({
 }: {
     children: React.ReactNode;
 }) {
+    const router = useRouter();
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const storedUser = localStorage.getItem("user");
+
+        if (!storedUser) {
+            router.push("/login");
+            return;
+        }
+
+        const parsedUser = JSON.parse(storedUser);
+
+        if (parsedUser.role !== "EDITOR") {
+            router.push("/login");
+            return;
+        }
+
+        setLoading(false);
+    }, [router]);
+
+    if (loading) return null; // prevents UI flash
+
     return (
         <div className="flex min-h-screen bg-background text-textPrimary">
 
